@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Formulário de Roteamento</title>
+    <style>
+        form {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        div#tecnicos-fields > div {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #add-endereco {
+            background-color: #008CBA;
+        }
+        /* Dentro da tag <style> */
+.tecnico-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.tecnico-container > div {
+    flex-basis: 48%; /* Ajusta para que cada conjunto de label e input ocupe quase metade do espaço disponível, deixando um pequeno espaço entre eles */
+}
+
+label {
+    display: inline-block; /* Mudança aqui para manter o label na mesma linha que o input */
+    margin-top: 10px;
+    margin-bottom: 5px; /* Ajuste para alinhar melhor com o input */
+}
+
+input[type="text"], input[type="number"] {
+    width: 100%; /* Mantém o input ocupando toda a largura do seu container */
+    padding: 8px;
+    margin-bottom: 10px; /* Ajuste para espaçamento após o input */
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+    </style>
+</head>
+<body>
+    <form method="post">
+    {% csrf_token %}
+    {{ endereco_formset.management_form }}
+    <div id="endereco_formset">
+        {% for form in endereco_formset %}
+            {{ form.as_p }}
+        {% endfor %}
+    </div>
+    <button type="button" id="add-endereco">Adicionar Endereço</button>
+
+        <div id="parametros_formset">
+        {% for form in parametros_formset %}
+        {{ form }}
+        {% endfor %}
+    </div>
+
+        <div>
+            <label for="num-tecnicos">Número de Técnicos:</label>
+<input type="number" id="num-tecnicos" name="num-tecnicos" min="1" value="1" onchange="updateTecnicosFields()">
+{{ tecnico_formset.management_form }}
+<div id="tecnicos-fields">
+    {% for form in tecnico_formset %}
+        <div class="tecnico-container">
+            <div>
+                {{ form.partida.label_tag }} {{ form.partida }}
+            </div>
+            <div>
+                {{ form.final.label_tag }} {{ form.final }}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+        </div>
+
+    <button type="submit">Enviar</button>
+</form>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAgAeYRe2m-qz-UU-xFVvNCWF_uVe-Kaeo&libraries=places&callback=initAutocomplete&language=pt-BR" async defer></script>
+<script>
+function initAutocomplete() {
+    // Inicializa o Autocomplete em todos os campos de endereço existentes
+    document.querySelectorAll('input[type="text"]').forEach(function(input) {
+        new google.maps.places.Autocomplete(input, {types: ['geocode'], componentRestrictions: {country: 'br'}});
+    });
+}
+
+function applyAutocompleteToNewField(inputElement) {
+    if (window.google && google.maps && google.maps.places) {
+        new google.maps.places.Autocomplete(inputElement, {types: ['geocode'], componentRestrictions: {country: 'br'}});
+    }
+     else {
+        // Se a API do Google Maps ainda não estiver carregada, adia a aplicação do Autocomplete
+        window.onload = function() {
+            new google.maps.places.Autocomplete(inputElement, {types: ['geocode'], componentRestrictions: {country: 'br'}});
+        }
+    }
+}
+</script>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript">
+document.getElementById('add-endereco').addEventListener('click', function() {
+    var formIdx = parseInt($('#id_enderecos-TOTAL_FORMS').val());
+    var newForm = $('#endereco_formset').children().first().clone(true, true); // Clone with data and events
+    newForm.find(':input').each(function() {
+        var newName = $(this).attr('name').replace('-0-', '-' + formIdx + '-');
+        var newId = 'id_' + newName;
+        $(this).attr({'name': newName, 'id': newId}).val('').removeAttr('checked');
+    });
+
+    // Adiciona um botão de remoção ao novo formulário clonado
+    var removeButton = $('<button type="button" class="remove-endereco">Remover Endereço</button>');
+    removeButton.on('click', function() {
+        $(this).parent().remove();
+        updateTotalForms(-1);
+    });
+    newForm.append(removeButton);
+
+    // Adiciona o novo formulário ao DOM
+    $('#endereco_formset').append(newForm);
+    $('#id_enderecos-TOTAL_FORMS').val(formIdx + 1);
+
+    // Encontre o novo campo de texto inserido
+    var inputElement = newForm.find('input[type="text"]')[0];
+
+    // Aplica o Autocomplete ao novo campo de endereço
+    applyAutocompleteToNewField(inputElement);
+});
+
+function updateTecnicosFields() {
+    var numTecnicos = document.getElementById('num-tecnicos').value;
+    var container = document.getElementById('tecnicos-fields');
+
+    // Se o número de campos é maior que o número de técnicos, remove os campos extras
+    while (container.children.length > numTecnicos) {
+        container.removeChild(container.lastChild);
+    }
+
+    // Se o número de campos é menor que o número de técnicos, adiciona os campos necessários
+    for (var i = container.children.length; i < numTecnicos; i++) {
+        var tecnicoContainer = document.createElement('div');
+        tecnicoContainer.className = 'tecnico-container';
+        tecnicoContainer.innerHTML = `
+            <div>
+                <label for="partida_${i}">Endereço de Partida ${i+1}:</label>
+                <input type="text" id="partida_${i}" name="tecnico-${i}-partida" required>
+            </div>
+            <div>
+                <label for="final_${i}">Endereço de Final ${i+1}:</label>
+                <input type="text" id="final_${i}" name="tecnico-${i}-final" required>
+            </div>`;
+        container.appendChild(tecnicoContainer);
+
+        // Aplica o Autocomplete aos novos campos de endereço
+        applyAutocompleteToNewField(document.getElementById('partida_' + i));
+        applyAutocompleteToNewField(document.getElementById('final_' + i));
+    }
+
+    // Atualiza o campo TOTAL_FORMS
+    document.getElementById('id_tecnicos-TOTAL_FORMS').value = numTecnicos;
+}
+// Chama a função updateTecnicosFields ao carregar a página para inicializar os campos de técnico com base no valor inicial do input.
+document.addEventListener('DOMContentLoaded', updateTecnicosFields);
+
+    </script>
+<script>
+document.querySelector('form').addEventListener('submit', function(event) {
+    event.preventDefault(); // Impede o envio padrão do formulário
+    var max_stops_input = document.getElementById('id_parametros-max_stops_input').value;
+    var max_time_input = document.getElementById('id_parametros-max_time_input').value;
+    var numTecnicos = document.getElementById('num-tecnicos').value;
+    var enderecoFormset = Array.from(document.querySelectorAll('#endereco_formset input[type="text"]')).map(input => input.value);
+    var tecnicoFormset = Array.from(document.querySelectorAll('#tecnicos-fields .tecnico-container')).map(container => {
+        return {
+            partida: container.querySelector('input[name$="-partida"]').value,
+            final: container.querySelector('input[name$="-final"]').value
+        };
+    });
+
+    var data = {
+        max_time_input: max_time_input,
+        max_stops_input: max_stops_input,
+        num_tecnicos: numTecnicos,
+        endereco_formset: enderecoFormset,
+        tecnico_formset: tecnicoFormset
+    };
+    console.log(data);
+
+    fetch('', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify(data)
+    }).then(response => response.json()).then(data => {
+  if (data.status === 'success') {
+        const rotasContainer = document.getElementById('rotas-container');
+        rotasContainer.innerHTML = ''; // Limpa a div
+
+        data.rotas.forEach((rota, index) => {
+            const botaoRota = document.createElement('button');
+            botaoRota.textContent = `Rota ${index + 1}`;
+            botaoRota.onclick = () => window.open(rota, '_blank');
+            rotasContainer.appendChild(botaoRota);
+
+            // Cria e adiciona o plano de rota como um parágrafo abaixo de cada botão
+            const planoRota = document.createElement('p');
+            planoRota.textContent = data.planos_rotas[index];  // Usa o plano de rota correspondente
+            planoRota.style.margin = '5px';
+            rotasContainer.appendChild(planoRota);
+        });
+    } else {
+        console.error('Falha ao obter rotas:', data);
+    }
+}).catch(error => {
+    console.error('Erro na requisição:', error);
+});
+});
+</script>
+
+<div id="rotas-container"></div>
+</body>
+</html>
