@@ -66,6 +66,62 @@ input[type="text"], input[type="number"] {
     box-sizing: border-box;
 }
     </style>
+
+    <style>
+    /* Estilo básico do modal */
+    .modal {
+        display: none; /* Escondido por padrão */
+        position: fixed; /* Fica fixo na tela */
+        z-index: 1; /* Fica acima de tudo */
+        left: 0;
+        top: 0;
+        width: 100%; /* Largura total */
+        height: 100%; /* Altura total */
+        overflow: auto; /* Habilita a barra de rolagem se necessário */
+        background-color: rgb(0,0,0); /* Cor de fundo */
+        background-color: rgba(0,0,0,0.4); /* Cor de fundo com opacidade */
+    }
+
+    /* Estilo do conteúdo do modal */
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% do topo e centralizado */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Largura do conteúdo */
+    }
+
+    /* O botão de fechar (x) */
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    /* Estilos adicionais para botões e textos */
+    .modal button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        margin: 10px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .modal p {
+        margin: 10px 0;
+    }
+</style>
+
 </head>
 <body>
     <form method="post">
@@ -226,23 +282,19 @@ document.querySelector('form').addEventListener('submit', function(event) {
         body: JSON.stringify(data)
     }).then(response => response.json()).then(data => {
   if (data.status === 'success') {
-        const rotasContainer = document.getElementById('rotas-container');
-        rotasContainer.innerHTML = ''; // Limpa a div
-
-        data.rotas.forEach((rota, index) => {
-            const botaoRota = document.createElement('button');
-            botaoRota.textContent = `Rota ${index + 1}`;
-            botaoRota.onclick = () => window.open(rota, '_blank');
-            rotasContainer.appendChild(botaoRota);
-
-            // Cria e adiciona o plano de rota como um parágrafo abaixo de cada botão
-            const planoRota = document.createElement('p');
-            planoRota.textContent = data.planos_rotas[index];  // Usa o plano de rota correspondente
-            planoRota.style.margin = '5px';
-            rotasContainer.appendChild(planoRota);
+        // Prepara um array com informações das rotas para ser usado pelo modal
+        const rotasInfo = data.rotas.map((rota, index) => {
+            return {
+                link: rota,
+                plano: data.planos_rotas[index] // Assumindo que você tenha os planos de rotas correspondentes disponíveis
+            };
         });
+
+        // Invoca a função para abrir o modal com as informações das rotas
+        abrirModalComRotas(rotasInfo);
     } else {
         console.error('Falha ao obter rotas:', data);
+        alert('Falha ao obter rotas. Tente novamente mais tarde.');
     }
 }).catch(error => {
     console.error('Erro na requisição:', error);
@@ -250,6 +302,46 @@ document.querySelector('form').addEventListener('submit', function(event) {
 });
 </script>
 
-<div id="rotas-container"></div>
+<!-- O Modal -->
+<div id="myModal" class="modal">
+
+  <!-- Conteúdo do Modal -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <div id="modal-body"></div>
+  </div>
+
+</div>
+<script>
+    // Obtém o modal
+var modal = document.getElementById("myModal");
+
+// Obtém o elemento <span> que fecha o modal
+var span = document.getElementsByClassName("close")[0];
+
+// Quando o usuário clica no <span> (x), fecha o modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// Quando o usuário clica fora do modal, ele fecha
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+// Função para abrir o modal e exibir as rotas
+function abrirModalComRotas(rotasInfo) {
+  document.getElementById('modal-body').innerHTML = ''; // Limpa o conteúdo anterior
+  rotasInfo.forEach((rotaInfo, index) => {
+    let rotaDiv = document.createElement('div');
+    rotaDiv.innerHTML = `<strong>Rota ${index + 1}:</strong> <p>${rotaInfo.plano}</p> <button onclick="window.open('${rotaInfo.link}','_blank')">Ver no Google Maps</button>`;
+    document.getElementById('modal-body').appendChild(rotaDiv);
+  });
+  modal.style.display = "block"; // Mostra o modal
+}
+
+</script>
 </body>
 </html>

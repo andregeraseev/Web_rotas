@@ -47,10 +47,12 @@ def routing_view(request):
                 for i, rota in enumerate(rotas):
                     print('rota', i, rota)
 
-            print('rotas', rotas)
+                print('rotas', rotas)
+                return JsonResponse({'status': 'success', 'rotas': rotas, 'total_distance': total_distance, 'planos_rotas': planos_rotas})
 
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Nenhuma solução encontrada!'})
 
-            return JsonResponse({'status': 'success', 'rotas': rotas, 'total_distance': total_distance, 'planos_rotas': planos_rotas})
         else:
             endereco_formset = EnderecoFormSet(request.POST, prefix='enderecos')
             tecnico_formset = TecnicoFormSet(request.POST, prefix='tecnicos')
@@ -183,7 +185,7 @@ def solve_routing_problem(enderecos_list, partida, volta, num_tecnicos,
 
 
     # Cria o modelo de dados.
-    max_time_per_vehicle = max_time_per_vehicle  # Tempo máximo total por veículo
+    max_time_per_vehicle = max_time_per_vehicle * 60  # Tempo máximo total por veículo
     data = create_data_model(enderecos, partida, volta, num_tecnicos)
     print('data',data)
 
@@ -298,7 +300,7 @@ def solve_routing_problem(enderecos_list, partida, volta, num_tecnicos,
         for vehicle_id in range(data['num_vehicles']):
             # print(f'Rota do Técnico {vehicle_id}:')
             index = routing.Start(vehicle_id)
-            plan_output = f'Rota do Técnico {vehicle_id}:\n'
+            plan_output = f''
             route_link = "https://www.google.com/maps/dir/"
             route_distance = 0
 
