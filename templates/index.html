@@ -2,6 +2,8 @@
 <html>
 <head>
     <title>Formulário de Roteamento</title>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAgAeYRe2m-qz-UU-xFVvNCWF_uVe-Kaeo&libraries=places&callback=initAutocomplete&language=pt-BR" async defer></script>
+
     <style>
         form {
             margin: 20px;
@@ -122,8 +124,64 @@ input[type="text"], input[type="number"] {
     }
 </style>
 
+    <style>
+
+        div#mapLoadingAnimationOverlay.hidden {
+  display: none;
+}
+
+    #mapLoadingAnimationOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8); /* Fundo branco semitransparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+
+  /* Estilo para a imagem do mapa */
+  .mapImage {
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    z-index: 1001; /* Garante que a imagem fique acima do fundo do overlay */
+  }
+
+  /* Ajuste se necessário para o SVG */
+  svg {
+    z-index: 1002; /* Garante que o SVG fique acima da imagem do mapa */
+    position: absolute;
+  }
+
+
+
+    </style>
+
 </head>
 <body>
+<div id="mapLoadingAnimationOverlay" class="hidden">
+  <svg width="400" height="400" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+    <!-- Fundo branco semitransparente como retângulo de fundo -->
+    <rect width="100%" height="100%" fill="rgba(255, 255, 255, 0.8)"/>
+    <!-- Inserir a imagem do mapa com tamanho 200x200 pixels -->
+    <image href="media/img/mps.webp" x="0" y="0" width="300" height="300"/>
+<path id="routePath" fill="none" stroke="#4285F4" stroke-width="2"
+      d="M 90 196 L 130 173 L 141 170 L 158 158 L 158 158 L 104 115 L 118 106 L 125 100 L 140 90 L 160 85 L 195 73" />    <circle r="5" fill="#db4437">
+      <animateMotion dur="4s" repeatCount="indefinite" fill="freeze">
+        <mpath href="#routePath" />
+      </animateMotion>
+    </circle>
+  </svg>
+</div>
+
+
+
+
     <form method="post">
     {% csrf_token %}
     {{ endereco_formset.management_form }}
@@ -161,7 +219,6 @@ input[type="text"], input[type="number"] {
     <button type="submit">Enviar</button>
 </form>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAgAeYRe2m-qz-UU-xFVvNCWF_uVe-Kaeo&libraries=places&callback=initAutocomplete&language=pt-BR" async defer></script>
 <script>
 function initAutocomplete() {
     // Inicializa o Autocomplete em todos os campos de endereço existentes
@@ -230,11 +287,11 @@ function updateTecnicosFields() {
         tecnicoContainer.innerHTML = `
             <div>
                 <label for="partida_${i}">Endereço de Partida ${i+1}:</label>
-                <input type="text" id="partida_${i}" name="tecnico-${i}-partida" required>
+                <input type="text" id="partida_${i}" name="tecnico-${i}-partida">
             </div>
             <div>
                 <label for="final_${i}">Endereço de Final ${i+1}:</label>
-                <input type="text" id="final_${i}" name="tecnico-${i}-final" required>
+                <input type="text" id="final_${i}" name="tecnico-${i}-final">
             </div>`;
         container.appendChild(tecnicoContainer);
 
@@ -253,6 +310,7 @@ document.addEventListener('DOMContentLoaded', updateTecnicosFields);
 <script>
 document.querySelector('form').addEventListener('submit', function(event) {
     event.preventDefault(); // Impede o envio padrão do formulário
+    showLoading(); // Mostra a animação de carregamento
     var max_stops_input = document.getElementById('id_parametros-max_stops_input').value;
     var max_time_input = document.getElementById('id_parametros-max_time_input').value;
     var numTecnicos = document.getElementById('num-tecnicos').value;
@@ -282,6 +340,8 @@ document.querySelector('form').addEventListener('submit', function(event) {
         body: JSON.stringify(data)
     }).then(response => response.json()).then(data => {
   if (data.status === 'success') {
+         hideLoading(); // Esconde a animação de carregamento
+
         // Prepara um array com informações das rotas para ser usado pelo modal
         const rotasInfo = data.rotas.map((rota, index) => {
             return {
@@ -293,10 +353,12 @@ document.querySelector('form').addEventListener('submit', function(event) {
         // Invoca a função para abrir o modal com as informações das rotas
         abrirModalComRotas(rotasInfo);
     } else {
+        hideLoading(); // Esconde a animação de carregamento
         console.error('Falha ao obter rotas:', data);
         alert('Falha ao obter rotas. Tente novamente mais tarde.');
     }
 }).catch(error => {
+    hideLoading(); // Esconde a animação de carregamento
     console.error('Erro na requisição:', error);
 });
 });
@@ -343,5 +405,16 @@ function abrirModalComRotas(rotasInfo) {
 }
 
 </script>
+<script>
+    function showLoading() {
+  document.getElementById('mapLoadingAnimationOverlay').classList.remove('hidden');
+}
+
+function hideLoading() {
+  document.getElementById('mapLoadingAnimationOverlay').classList.add('hidden');
+}
+
+</script>
+
 </body>
 </html>

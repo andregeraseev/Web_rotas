@@ -185,7 +185,7 @@ def solve_routing_problem(enderecos_list, partida, volta, num_tecnicos,
 
 
     # Cria o modelo de dados.
-    max_time_per_vehicle = max_time_per_vehicle * 60  # Tempo máximo total por veículo
+    max_time_per_vehicle = max_time_per_vehicle*60  # Tempo máximo total por veículo
     data = create_data_model(enderecos, partida, volta, num_tecnicos)
     print('data',data)
 
