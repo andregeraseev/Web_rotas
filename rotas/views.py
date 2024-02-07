@@ -207,7 +207,7 @@ def solve_routing_problem(enderecos_list, partida, volta, num_tecnicos,
 
     # create_minimum_stops_dimension(routing, manager, data, min_stops_per_vehicle)
 
-    PENALIDADE_POR_PARADA = 1800  # 10 unidades de tempo de penalidade por parada
+    PENALIDADE_POR_PARADA = 60  # 10 unidades de tempo de penalidade por parada
 
     def time_callback(from_index, to_index):
         # Convertendo índices de roteamento para índices da matriz
@@ -303,6 +303,7 @@ def solve_routing_problem(enderecos_list, partida, volta, num_tecnicos,
             plan_output = f''
             route_link = "https://www.google.com/maps/dir/"
             route_distance = 0
+            route_time = 0
 
             while not routing.IsEnd(index):
                 # print('index', index)
@@ -310,7 +311,7 @@ def solve_routing_problem(enderecos_list, partida, volta, num_tecnicos,
 
                 if node_index < len(enderecos):
                     # print('node_index', node_index)
-                    plan_output += f' {enderecos[node_index]} -> '
+                    plan_output += f' {enderecos[node_index]} => '
                     encoded_address = quote(enderecos[node_index])
                 else:
                     # print('node_index', node_index)
@@ -331,7 +332,7 @@ def solve_routing_problem(enderecos_list, partida, volta, num_tecnicos,
                         extra_index -= len(partida)
                         if volta[extra_index] is not None:
                             # print('extra_index', extra_index)
-                            plan_output += f' {volta[extra_index]} -> '
+                            plan_output += f' {volta[extra_index]} => '
                             # print('volta[extra_index]', volta[extra_index])
                             encoded_address = quote(volta[extra_index])
                             # print('encoded_address', encoded_address)
@@ -344,7 +345,7 @@ def solve_routing_problem(enderecos_list, partida, volta, num_tecnicos,
                 previous_index = index
                 index = solution.Value(routing.NextVar(index))  # Atualiza o índice para o próximo ponto
                 route_distance += routing.GetArcCostForVehicle(previous_index, index, vehicle_id)
-
+                route_time += solution.Min(time_dimension.CumulVar(index)) - solution.Min(time_dimension.CumulVar(previous_index))
             end_node_index = manager.IndexToNode(routing.End(vehicle_id))
             if end_node_index < len(enderecos):
                 plan_output += f'{enderecos[end_node_index]}\n'
@@ -369,7 +370,10 @@ def solve_routing_problem(enderecos_list, partida, volta, num_tecnicos,
 
             if encoded_address:
                 route_link += encoded_address.replace(' ', '+')
-            plan_output += f'Distância da Rota: {route_distance}m\n'
+
+            minutes, seconds = divmod(route_time, 60)
+            plan_output += ' Distância Total: {} m, Tempo Total: {} min {} seg\n'.format(route_distance, int(minutes),
+                                                                                         int(seconds))
             print(plan_output)
             planos_rotas.append(plan_output)
             print("Link do Google Maps para esta rota:", route_link)

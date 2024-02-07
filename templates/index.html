@@ -157,6 +157,21 @@ input[type="text"], input[type="number"] {
     z-index: 1002; /* Garante que o SVG fique acima da imagem do mapa */
     position: absolute;
   }
+  @keyframes fadeInOut {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.loadingText {
+  font-family: 'Arial', sans-serif; /* Ou outra fonte de sua escolha */
+  font-size: 20px; /* Ajuste o tamanho conforme necessário */
+  color: #4285F4; /* Cor que combine com a sua animação */
+  text-align: center;
+  margin-top: 400px; /* Espaçamento acima do texto */
+  animation: fadeInOut 2s linear infinite; /* Aplica a animação de fade in/out */
+  z-index: 1002;
+}
+
 
 
 
@@ -169,14 +184,15 @@ input[type="text"], input[type="number"] {
     <!-- Fundo branco semitransparente como retângulo de fundo -->
     <rect width="100%" height="100%" fill="rgba(255, 255, 255, 0.8)"/>
     <!-- Inserir a imagem do mapa com tamanho 200x200 pixels -->
-    <image href="media/img/mps.webp" x="0" y="0" width="300" height="300"/>
+    <image href="media/img/mapa.png" x="0" y="0" width="300" height="300"/>
 <path id="routePath" fill="none" stroke="#4285F4" stroke-width="2"
-      d="M 90 196 L 130 173 L 141 170 L 158 158 L 158 158 L 104 115 L 118 106 L 125 100 L 140 90 L 160 85 L 195 73" />    <circle r="5" fill="#db4437">
+      d="M 94 196 L 130 173 L 141 170 L 157 160 L 137 143 L 109 122 L 130 107 L 144 99 L 160 96 L 170 91 L 189 84" />    <circle r="5" fill="#db4437">
       <animateMotion dur="4s" repeatCount="indefinite" fill="freeze">
         <mpath href="#routePath" />
       </animateMotion>
     </circle>
   </svg>
+      <div class="loadingText">Carregando...</div>
 </div>
 
 
@@ -355,7 +371,7 @@ document.querySelector('form').addEventListener('submit', function(event) {
     } else {
         hideLoading(); // Esconde a animação de carregamento
         console.error('Falha ao obter rotas:', data);
-        alert('Falha ao obter rotas. Tente novamente mais tarde.');
+        alert('Falha ao obter rotas. Tente dar aumentar o tempo, numero de cargas ou nomero de veiculos.');
     }
 }).catch(error => {
     hideLoading(); // Esconde a animação de carregamento
