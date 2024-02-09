@@ -305,6 +305,37 @@ input[type=text]:placeholder {
   width: 100%;
 }
 
+.messages {
+    width: 100%;
+    z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    text-align: center;
+}
+
+.message {
+    padding: 10px;
+    color: #fff;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.message.info {
+    background-color: #17a2b8; /* Bootstrap info color */
+}
+
+.message.success {
+    background-color: #28a745; /* Bootstrap success color */
+}
+
+.message.warning {
+    background-color: #ffc107; /* Bootstrap warning color */
+}
+
+.message.error {
+    background-color: #dc3545; /* Bootstrap danger color */
+}
 
 
 /* OTHERS */
@@ -328,14 +359,13 @@ input[type=text]:placeholder {
     <body>
     <div class="wrapper fadeInDown">
         {% block body %}
-            {% if messages %}
-                <div>
-                    <strong>{% trans "Messages:" %}</strong>
-                    <ul>
-                        {% for message in messages %}<li>{{ message }}</li>{% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
         <div id="formContent">
 <!--            <div>-->
 

@@ -21,4 +21,3 @@ class MyCustomLoginForm(LoginForm):
     def __init__(self, *args, **kwargs):
         super(MyCustomLoginForm, self).__init__(*args, **kwargs)
         # Remova o campo 'remember' se existir
-        self.fields.pop('remember', None)
