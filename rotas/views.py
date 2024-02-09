@@ -1,4 +1,5 @@
 # views.py
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from .forms import EnderecoFormSet, TecnicoFormSet, ParametrosForm
 from django.http import JsonResponse
@@ -6,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 @csrf_exempt
+@login_required
 def routing_view(request):
     if request.method == 'POST':
         if request.content_type == 'application/json':

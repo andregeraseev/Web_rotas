@@ -1,0 +1,38 @@
+{% load allauth %}
+<p>
+    <label for="{{ attrs.id }}">
+        {% slot label %}
+        {% endslot %}
+    </label>
+    {% if attrs.type == "textarea" %}
+        <textarea {% if attrs.required %}required{% endif %}
+                  {% if attrs.rows %}rows="{{ attrs.rows }}"{% endif %}
+                  {% if attrs.disabled %}disabled{% endif %}
+                  {% if attrs.readonly %}readonly{% endif %}
+                  {% if attrs.checked %}checked{% endif %}
+                  {% if attrs.name %}name="{{ attrs.name }}"{% endif %}
+                  {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+                  {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}>{% slot value %}{% endslot %}</textarea>
+    {% else %}
+        <input class="fadeIn second"
+                {% if attrs.required %}required{% endif %}
+               {% if attrs.disabled %}disabled{% endif %}
+               {% if attrs.readonly %}readonly{% endif %}
+               {% if attrs.checked %}checked{% endif %}
+               {% if attrs.name %}name="{{ attrs.name }}"{% endif %}
+               {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+               {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}
+               {% if attrs.autocomplete %}autocomplete="{{ attrs.autocomplete }}"{% endif %}
+               value="{{ attrs.value|default_if_none:"" }}"
+               type="{{ attrs.type }}">
+    {% endif %}
+    {% if slots.help_text %}
+        <span>{% slot help_text %}</span>
+        {% endslot %}
+    {% endif %}
+</p>
+<!--  <form>-->
+<!--      <input type="text" id="login" class="fadeIn second" name="login" placeholder="login">-->
+<!--      <input type="text" id="password" class="fadeIn third" name="login" placeholder="password">-->
+<!--      <input type="submit" class="fadeIn fourth" value="Log In">-->
+<!--    </form>-->

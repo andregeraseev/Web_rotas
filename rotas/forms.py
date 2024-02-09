@@ -21,3 +21,4 @@ from django.forms import formset_factory
 
 EnderecoFormSet = formset_factory(EnderecoForm, extra=1)
 TecnicoFormSet = formset_factory(TecnicoForm, extra=1)
+
